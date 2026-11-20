@@ -1,0 +1,59 @@
+<UserControl x:Class="TelDiskCleaner.App.Views.DiskAnalyzerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:TelDiskCleaner.App.ViewModels"
+             xmlns:conv="clr-namespace:TelDiskCleaner.App.Converters"
+             d:DataContext="{d:DesignInstance Type=vm:DiskAnalyzerViewModel}"
+             mc:Ignorable="d"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+    <UserControl.Resources>
+        <conv:InverseBooleanConverter x:Key="InverseBoolean" />
+        <conv:PercentToWidthConverter x:Key="BarWidthConverter" />
+
+        <HierarchicalDataTemplate x:Key="NodeTemplate" ItemsSource="{Binding Children}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="140" />
+                    <ColumnDefinition Width="120" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding Name}" />
+                <TextBlock Grid.Column="1" Text="{Binding SizeDisplay}" HorizontalAlignment="Right" />
+                <Border Grid.Column="2" Height="10" Background="#E0E0E0" Margin="8,0,0,0" VerticalAlignment="Center">
+                    <Border Background="#4A90D9" HorizontalAlignment="Left"
+                            Width="{Binding PercentOfParent, Converter={StaticResource BarWidthConverter}}" />
+                </Border>
+            </Grid>
+        </HierarchicalDataTemplate>
+    </UserControl.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="0">
+            <TextBlock Text="Folder:" VerticalAlignment="Center" Margin="0,0,8,0" />
+            <TextBox Text="{Binding PathToScan, UpdateSourceTrigger=PropertyChanged}" Width="420" />
+            <Button Content="Scan" Margin="8,0,0,0" Command="{Binding ScanCommand}"
+                    IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBoolean}}" />
+            <Button Content="Cancel" Margin="8,0,0,0" Command="{Binding CancelCommand}"
+                    IsEnabled="{Binding IsScanning}" />
+        </StackPanel>
+
+        <TextBlock Grid.Row="1" Text="{Binding StatusMessage}" Margin="0,8,0,8" />
+
+        <TreeView Grid.Row="2" ItemsSource="{Binding Results}" ItemTemplate="{StaticResource NodeTemplate}">
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="{x:Type TreeViewItem}">
+                    <Setter Property="IsExpanded" Value="False" />
+                    <Setter Property="VirtualizingStackPanel.IsVirtualizing" Value="True" />
+                    <Setter Property="VirtualizingStackPanel.VirtualizationMode" Value="Recycling" />
+                </Style>
+            </TreeView.ItemContainerStyle>
+        </TreeView>
+    </Grid>
+</UserControl>

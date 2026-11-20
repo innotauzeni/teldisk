@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TelDiskCleaner.App/TelDiskCleaner.App.csproj" />
+    <Project Path="src/TelDiskCleaner.Core.Tests/TelDiskCleaner.Core.Tests.csproj" />
+    <Project Path="src/TelDiskCleaner.Core/TelDiskCleaner.Core.csproj" />
+  </Folder>
+</Solution>
