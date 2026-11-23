@@ -7,8 +7,10 @@
         mc:Ignorable="d"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        Title="TelDiskCleaner" Height="650" Width="950" Icon="Assets/teldiskcleaner.ico">
+        Title="TelDiskCleaner" Height="700" Width="1100" Icon="Assets/teldiskcleaner.ico">
     <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+
         <DataTemplate DataType="{x:Type vm:DiskAnalyzerViewModel}">
             <views:DiskAnalyzerView />
         </DataTemplate>
@@ -18,19 +20,42 @@
         <DataTemplate DataType="{x:Type vm:TempCleanupViewModel}">
             <views:TempCleanupView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StartupAppsViewModel}">
+            <views:StartupAppsView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ProcessManagerViewModel}">
+            <views:ProcessManagerView />
+        </DataTemplate>
+
+        <Style x:Key="NavButton" TargetType="Button">
+            <Setter Property="Margin" Value="8,4" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+        </Style>
     </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="180" />
+            <ColumnDefinition Width="190" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Column="0" Background="#2D2D30">
-            <Button Content="Disk Analyzer" Command="{Binding ShowDiskAnalyzerCommand}" Margin="8" Padding="4" />
-            <Button Content="Dev Project Cleaner" Command="{Binding ShowProjectCleanerCommand}" Margin="8" Padding="4" />
-            <Button Content="Temp Cleanup" Command="{Binding ShowTempCleanupCommand}" Margin="8" Padding="4" />
-        </StackPanel>
+        <DockPanel Grid.Column="0" Background="#2D2D30">
+            <StackPanel DockPanel.Dock="Bottom" Margin="8,8,8,14">
+                <TextBlock Text="Running as administrator" Foreground="#9FE0B5" Margin="4,0" TextWrapping="Wrap"
+                           Visibility="{Binding IsAdministrator, Converter={StaticResource BoolToVis}}" />
+                <Button Content="Restart as administrator" Command="{Binding RestartAsAdministratorCommand}" Padding="6,5"
+                        ToolTip="Needed for all-users startup apps, Windows Update files and system processes"
+                        Visibility="{Binding IsNotAdministrator, Converter={StaticResource BoolToVis}}" />
+            </StackPanel>
+            <StackPanel Margin="0,8,0,0">
+                <Button Content="Disk Analyzer" Command="{Binding ShowDiskAnalyzerCommand}" Style="{StaticResource NavButton}" />
+                <Button Content="Dev Project Cleaner" Command="{Binding ShowProjectCleanerCommand}" Style="{StaticResource NavButton}" />
+                <Button Content="Junk Cleanup" Command="{Binding ShowTempCleanupCommand}" Style="{StaticResource NavButton}" />
+                <Button Content="Startup Apps" Command="{Binding ShowStartupAppsCommand}" Style="{StaticResource NavButton}" />
+                <Button Content="Processes" Command="{Binding ShowProcessManagerCommand}" Style="{StaticResource NavButton}" />
+            </StackPanel>
+        </DockPanel>
 
         <ContentControl Grid.Column="1" Content="{Binding CurrentView}" />
     </Grid>

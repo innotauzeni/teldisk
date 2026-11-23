@@ -79,7 +79,7 @@ public sealed class ProjectScanner
                     continue;
                 }
 
-                if (ArtifactFolderDefinitions.TryGetKind(subdirName, out var kind))
+                if (ArtifactFolderDefinitions.TryGetKind(subdirName, dir, out var kind))
                 {
                     var projectRoot = dir;
                     var size = DirectorySizeCalculator.ComputeSize(subdir, cancellationToken);

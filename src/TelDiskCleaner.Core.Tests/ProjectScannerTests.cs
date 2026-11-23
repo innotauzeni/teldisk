@@ -58,6 +58,42 @@ public class ProjectScannerTests : IDisposable
     }
 
     [Fact]
+    public void ScanForArtifacts_FlutterBuildOnlyCountsNextToPubspec()
+    {
+        var flutterApp = Path.Combine(_root, "flutter_app");
+        Directory.CreateDirectory(Path.Combine(flutterApp, "build"));
+        Directory.CreateDirectory(Path.Combine(flutterApp, ".dart_tool"));
+        File.WriteAllText(Path.Combine(flutterApp, "pubspec.yaml"), "name: flutter_app");
+
+        var scripts = Path.Combine(_root, "plain_repo");
+        Directory.CreateDirectory(Path.Combine(scripts, "build"));
+
+        var candidates = new ProjectScanner().ScanForArtifacts(new[] { _root }, CancellationToken.None);
+
+        var candidate = Assert.Single(candidates);
+        Assert.Equal(flutterApp, candidate.ProjectRoot);
+        Assert.Equal(2, candidate.Artifacts.Count);
+    }
+
+    [Fact]
+    public void ScanForArtifacts_BinAndObjOnlyCountNextToAProjectFile()
+    {
+        var dotnetApp = Path.Combine(_root, "dotnet_app");
+        Directory.CreateDirectory(Path.Combine(dotnetApp, "bin"));
+        Directory.CreateDirectory(Path.Combine(dotnetApp, "obj"));
+        File.WriteAllText(Path.Combine(dotnetApp, "App.csproj"), "<Project />");
+
+        var nodeTool = Path.Combine(_root, "node_tool");
+        Directory.CreateDirectory(Path.Combine(nodeTool, "bin"));
+
+        var candidates = new ProjectScanner().ScanForArtifacts(new[] { _root }, CancellationToken.None);
+
+        var candidate = Assert.Single(candidates);
+        Assert.Equal(dotnetApp, candidate.ProjectRoot);
+        Assert.Equal(2, candidate.Artifacts.Count);
+    }
+
+    [Fact]
     public void ScanForArtifacts_GroupsMultipleArtifactsUnderSameProjectRoot()
     {
         var project = Path.Combine(_root, "angular-app");

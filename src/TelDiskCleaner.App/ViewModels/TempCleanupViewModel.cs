@@ -1,4 +1,7 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using TelDiskCleaner.Core.Common;
@@ -9,15 +12,20 @@ namespace TelDiskCleaner.App.ViewModels;
 public sealed partial class TempLocationViewModel : ObservableObject
 {
     public required TempLocation Location { get; init; }
+    public required bool IsAdministrator { get; init; }
 
     [ObservableProperty]
-    private bool _isSelected = true;
+    private bool _isSelected;
 
     [ObservableProperty]
     private string _sizeDisplay = "Calculating...";
 
     public string Name => Location.Name;
-    public bool RequiresElevation => Location.RequiresElevation;
+    public string Category => Location.Category;
+
+    public string Note => Location.RequiresElevation && !IsAdministrator
+        ? ("Needs administrator. " + Location.Note).Trim()
+        : Location.Note;
 
     public void RefreshSizeDisplay() => SizeDisplay = SizeFormatter.Format(Location.SizeBytes);
 }
@@ -25,6 +33,7 @@ public sealed partial class TempLocationViewModel : ObservableObject
 public sealed partial class TempCleanupViewModel : ObservableObject
 {
     private readonly TempCleanupService _service = new();
+    private readonly bool _isAdministrator = AdminHelper.IsAdministrator();
 
     [ObservableProperty]
     private bool _isBusy;
@@ -33,9 +42,15 @@ public sealed partial class TempCleanupViewModel : ObservableObject
     private string _statusMessage = string.Empty;
 
     public ObservableCollection<TempLocationViewModel> Locations { get; } = new();
+    public ICollectionView LocationsView { get; }
+
+    public string SelectedTotalDisplay =>
+        SizeFormatter.Format(Locations.Where(l => l.IsSelected).Sum(l => l.Location.SizeBytes));
 
     public TempCleanupViewModel()
     {
+        LocationsView = CollectionViewSource.GetDefaultView(Locations);
+        LocationsView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(TempLocationViewModel.Category)));
         _ = RefreshAsync();
     }
 
@@ -46,28 +61,42 @@ public sealed partial class TempCleanupViewModel : ObservableObject
         StatusMessage = "Calculating reclaimable space...";
         Locations.Clear();
 
-        var locations = _service.GetLocations();
+        var locations = await Task.Run(_service.GetLocations);
         foreach (var location in locations)
         {
-            Locations.Add(new TempLocationViewModel { Location = location });
+            var vm = new TempLocationViewModel
+            {
+                Location = location,
+                IsAdministrator = _isAdministrator,
+                IsSelected = location.SelectedByDefault && (!location.RequiresElevation || _isAdministrator),
+            };
+            vm.PropertyChanged += (_, args) =>
+            {
+                if (args.PropertyName == nameof(TempLocationViewModel.IsSelected))
+                {
+                    OnPropertyChanged(nameof(SelectedTotalDisplay));
+                }
+            };
+            Locations.Add(vm);
         }
 
-        await Task.Run(() =>
+        // Size each row as soon as it is known; developer caches can take a while.
+        foreach (var vm in Locations.ToList())
         {
-            foreach (var location in locations)
+            await Task.Run(() =>
             {
                 try
                 {
-                    _service.ComputeSize(location, CancellationToken.None);
+                    _service.ComputeSize(vm.Location, CancellationToken.None);
                 }
-                catch (Exception)
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
-                    location.SizeBytes = 0;
+                    vm.Location.SizeBytes = 0;
                 }
-            }
-        });
-
-        foreach (var vm in Locations) vm.RefreshSizeDisplay();
+            });
+            vm.RefreshSizeDisplay();
+            OnPropertyChanged(nameof(SelectedTotalDisplay));
+        }
 
         IsBusy = false;
         StatusMessage = string.Empty;
@@ -97,10 +126,10 @@ public sealed partial class TempCleanupViewModel : ObservableObject
             }
         });
 
-        StatusMessage = $"Freed {SizeFormatter.Format(totalFreed)}" +
-            (totalSkipped > 0 ? $"; {totalSkipped} item(s) skipped (in use)." : ".");
-
         IsBusy = false;
         await RefreshAsync();
+
+        StatusMessage = $"Freed {SizeFormatter.Format(totalFreed)}" +
+            (totalSkipped > 0 ? $"; {totalSkipped:N0} item(s) skipped because they are in use or need administrator." : ".");
     }
 }

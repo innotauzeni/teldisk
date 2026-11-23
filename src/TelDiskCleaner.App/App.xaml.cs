@@ -16,6 +16,8 @@ public partial class App : Application
         services.AddSingleton<DiskAnalyzerViewModel>();
         services.AddSingleton<ProjectCleanerViewModel>();
         services.AddSingleton<TempCleanupViewModel>();
+        services.AddSingleton<StartupAppsViewModel>();
+        services.AddSingleton<ProcessManagerViewModel>();
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<MainWindow>();
 

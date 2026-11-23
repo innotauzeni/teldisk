@@ -9,39 +9,59 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
     <UserControl.Resources>
         <conv:InverseBooleanConverter x:Key="InverseBoolean" />
-        <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </UserControl.Resources>
 
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="{Binding StatusMessage}" Margin="0,0,0,8" />
+        <TextBlock Grid.Row="0" TextWrapping="Wrap" Margin="0,0,0,6"
+                   Text="Junk files that are safe to remove. Caches that take long to download again start unticked." />
+        <TextBlock Grid.Row="1" Text="{Binding StatusMessage}" FontWeight="SemiBold" Margin="0,0,0,8" TextWrapping="Wrap" />
 
-        <DataGrid Grid.Row="1" ItemsSource="{Binding Locations}" AutoGenerateColumns="False" CanUserAddRows="False">
+        <DataGrid Grid.Row="2" ItemsSource="{Binding LocationsView}" AutoGenerateColumns="False"
+                  CanUserAddRows="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+            <DataGrid.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="14" Margin="4,12,0,4" />
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </DataGrid.GroupStyle>
             <DataGrid.Columns>
-                <DataGridCheckBoxColumn Header="" Binding="{Binding IsSelected}" />
-                <DataGridTextColumn Header="Location" Binding="{Binding Name}" Width="220" IsReadOnly="True" />
-                <DataGridTextColumn Header="Reclaimable" Binding="{Binding SizeDisplay}" Width="120" IsReadOnly="True" />
-                <DataGridTemplateColumn Header="Note" Width="260">
+                <DataGridTemplateColumn Header="">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <TextBlock Text="Requires running as Administrator" Foreground="Gray"
-                                       Visibility="{Binding RequiresElevation, Converter={StaticResource BoolToVis}}" />
+                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4,0" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Location" Binding="{Binding Name}" Width="200" />
+                <DataGridTextColumn Header="Size" Binding="{Binding SizeDisplay}" Width="100" />
+                <DataGridTemplateColumn Header="Note" Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Note}" TextWrapping="Wrap" Foreground="#555555" Margin="2" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,8,0,0">
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,8,0,0">
             <Button Content="Refresh" Command="{Binding RefreshCommand}"
                     IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolean}}" Padding="8,4" />
             <Button Content="Clean selected" Click="OnCleanSelectedClick" Margin="8,0,0,0" Padding="8,4"
                     IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolean}}" />
+            <TextBlock Text="{Binding SelectedTotalDisplay, StringFormat='Selected: {0}'}"
+                       VerticalAlignment="Center" Margin="16,0,0,0" FontWeight="SemiBold" />
         </StackPanel>
     </Grid>
 </UserControl>

@@ -23,6 +23,7 @@
     <ApplicationIcon>Assets\teldiskcleaner.ico</ApplicationIcon>
     <AssemblyTitle>TelDiskCleaner</AssemblyTitle>
     <Product>TelDiskCleaner</Product>
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
 </Project>
