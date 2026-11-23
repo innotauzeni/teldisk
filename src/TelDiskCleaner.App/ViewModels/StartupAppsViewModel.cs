@@ -3,6 +3,8 @@ using System.IO;
 using System.Security;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using TelDiskCleaner.Core.Common;
+using TelDiskCleaner.Core.Recovery;
 using TelDiskCleaner.Core.Startup;
 
 namespace TelDiskCleaner.App.ViewModels;
@@ -25,14 +27,21 @@ public sealed partial class StartupEntryViewModel : ObservableObject
 public sealed partial class StartupAppsViewModel : ObservableObject
 {
     private readonly StartupService _service = new();
+    private readonly RestorePointService _restorePoints;
+    private readonly bool _isAdministrator = AdminHelper.IsAdministrator();
+    private bool _restorePointAttempted;
 
     [ObservableProperty]
     private string _statusMessage = string.Empty;
 
+    [ObservableProperty]
+    private bool _isBusy;
+
     public ObservableCollection<StartupEntryViewModel> Entries { get; } = new();
 
-    public StartupAppsViewModel()
+    public StartupAppsViewModel(RestorePointService restorePoints)
     {
+        _restorePoints = restorePoints;
         Refresh();
     }
 
@@ -55,16 +64,29 @@ public sealed partial class StartupAppsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void Toggle(StartupEntryViewModel item)
+    private async Task ToggleAsync(StartupEntryViewModel item)
     {
         var enable = !item.IsEnabled;
+        var restorePointNote = string.Empty;
+
+        // Restore points need administrator rights, so they are only made when running as admin.
+        if (_isAdministrator && !_restorePointAttempted)
+        {
+            _restorePointAttempted = true;
+            IsBusy = true;
+            StatusMessage = "Creating a Windows restore point before the first change...";
+            var point = await _restorePoints.CreateAsync("Before startup app changes");
+            restorePointNote = point.Created ? " A restore point was created first." : $" (No restore point: {point.Message})";
+            IsBusy = false;
+        }
+
         try
         {
             _service.SetEnabled(item.Entry, enable);
             item.IsEnabled = enable;
-            StatusMessage = enable
+            StatusMessage = (enable
                 ? $"{item.Name} will start with Windows again from your next sign-in."
-                : $"{item.Name} will no longer start with Windows from your next sign-in.";
+                : $"{item.Name} will no longer start with Windows from your next sign-in.") + restorePointNote;
         }
         catch (UnauthorizedAccessException)
         {

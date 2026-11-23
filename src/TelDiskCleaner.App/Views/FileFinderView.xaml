@@ -1,0 +1,118 @@
+<UserControl x:Class="TelDiskCleaner.App.Views.FileFinderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:TelDiskCleaner.App.ViewModels"
+             xmlns:conv="clr-namespace:TelDiskCleaner.App.Converters"
+             d:DataContext="{d:DesignInstance Type=vm:FileFinderViewModel}"
+             mc:Ignorable="d"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+    <UserControl.Resources>
+        <conv:InverseBooleanConverter x:Key="InverseBoolean" />
+
+        <DataTemplate x:Key="SelectCell">
+            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanRemove}"
+                      HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4,0" />
+        </DataTemplate>
+        <DataTemplate x:Key="ShowCell">
+            <Button Content="Show" Padding="6,1" Margin="2" Click="OnShowClick" />
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Style="{StaticResource Muted}" Margin="0,0,0,8"
+                   Text="Find what's taking space. Files you remove go to Recovery for 7 days, so you can bring them back. Windows and program files are never offered." />
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+            <TextBlock Text="Look in:" VerticalAlignment="Center" Margin="0,0,8,0" />
+            <TextBox Text="{Binding Folder, UpdateSourceTrigger=PropertyChanged}" Width="420" VerticalContentAlignment="Center" />
+            <Button Content="Browse..." Click="OnBrowseClick" Style="{StaticResource Plain}" Margin="8,0,0,0" />
+            <Button Content="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource Plain}" IsEnabled="{Binding IsScanning}" />
+        </StackPanel>
+
+        <TabControl Grid.Row="2">
+            <TabItem Header="Large files">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="Minimum size (MB):" VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <TextBox Text="{Binding LargeMinMb, UpdateSourceTrigger=PropertyChanged}" Width="70" VerticalContentAlignment="Center" />
+                        <Button Content="Find large files" Command="{Binding FindLargeFilesCommand}" Style="{StaticResource Primary}" Margin="12,0,0,0"
+                                IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBoolean}}" />
+                    </StackPanel>
+                    <TextBlock Grid.Row="1" Text="{Binding LargeStatus}" FontWeight="SemiBold" Margin="0,0,0,8" TextWrapping="Wrap" />
+                    <DataGrid Grid.Row="2" ItemsSource="{Binding LargeFiles}" AutoGenerateColumns="False" IsReadOnly="True"
+                              CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="" CellTemplate="{StaticResource SelectCell}" />
+                            <DataGridTextColumn Header="File" Binding="{Binding Name}" Width="230" />
+                            <DataGridTextColumn Header="Size" Binding="{Binding SizeDisplay}" SortMemberPath="File.SizeBytes" Width="90" />
+                            <DataGridTextColumn Header="Modified" Binding="{Binding Modified}" SortMemberPath="File.ModifiedUtc" Width="100" />
+                            <DataGridTextColumn Header="Folder" Binding="{Binding Folder}" Width="*" />
+                            <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="170" />
+                            <DataGridTemplateColumn Header="" CellTemplate="{StaticResource ShowCell}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button Content="Move selected to Recovery" Click="OnRemoveLargeClick" Style="{StaticResource Primary}"
+                                IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBoolean}}" />
+                        <TextBlock Text="{Binding LargeSelectedDisplay, StringFormat='Selected: {0}'}" VerticalAlignment="Center" Margin="12,0,0,0" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Duplicate files">
+                <Grid Margin="8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="Ignore files smaller than (MB):" VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <TextBox Text="{Binding DuplicateMinMb, UpdateSourceTrigger=PropertyChanged}" Width="70" VerticalContentAlignment="Center" />
+                        <Button Content="Find duplicates" Command="{Binding FindDuplicatesCommand}" Style="{StaticResource Primary}" Margin="12,0,0,0"
+                                IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBoolean}}" />
+                    </StackPanel>
+                    <TextBlock Grid.Row="1" Text="{Binding DuplicateStatus}" FontWeight="SemiBold" Margin="0,0,0,8" TextWrapping="Wrap" />
+                    <DataGrid Grid.Row="2" ItemsSource="{Binding DuplicatesView}" AutoGenerateColumns="False" IsReadOnly="True"
+                              CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                        <DataGrid.GroupStyle>
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Margin="4,10,0,4" />
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </DataGrid.GroupStyle>
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Remove" CellTemplate="{StaticResource SelectCell}" />
+                            <DataGridTextColumn Header="File" Binding="{Binding Name}" Width="220" />
+                            <DataGridTextColumn Header="Modified" Binding="{Binding Modified}" Width="100" />
+                            <DataGridTextColumn Header="Folder" Binding="{Binding Folder}" Width="*" />
+                            <DataGridTemplateColumn Header="" CellTemplate="{StaticResource ShowCell}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button Content="Move ticked copies to Recovery" Click="OnRemoveDuplicatesClick" Style="{StaticResource Primary}"
+                                IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBoolean}}" />
+                        <TextBlock Text="{Binding DuplicateSelectedDisplay, StringFormat='Selected: {0}'}" VerticalAlignment="Center" Margin="12,0,0,0" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

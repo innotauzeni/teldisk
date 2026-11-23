@@ -23,7 +23,13 @@
     <ApplicationIcon>Assets\teldiskcleaner.ico</ApplicationIcon>
     <AssemblyTitle>TelDiskCleaner</AssemblyTitle>
     <Product>TelDiskCleaner</Product>
-    <Version>1.1.0</Version>
+    <Version>2.0.0</Version>
+    <!-- Publish with -p:LicenseServerUrl=https://your-server to point the app at the live licence server. -->
+    <LicenseServerUrl Condition="'$(LicenseServerUrl)' == ''">http://localhost:5080</LicenseServerUrl>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="LicenseServerUrl" Value="$(LicenseServerUrl)" />
+  </ItemGroup>
 
 </Project>

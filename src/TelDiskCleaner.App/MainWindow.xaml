@@ -7,54 +7,64 @@
         mc:Ignorable="d"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        Title="TelDiskCleaner" Height="700" Width="1100" Icon="Assets/teldiskcleaner.ico">
+        Title="TelDiskCleaner" Height="760" Width="1180" Icon="Assets/teldiskcleaner.ico">
     <Window.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVis" />
-
-        <DataTemplate DataType="{x:Type vm:DiskAnalyzerViewModel}">
-            <views:DiskAnalyzerView />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:ProjectCleanerViewModel}">
-            <views:ProjectCleanerView />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:TempCleanupViewModel}">
-            <views:TempCleanupView />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:StartupAppsViewModel}">
-            <views:StartupAppsView />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type vm:ProcessManagerViewModel}">
-            <views:ProcessManagerView />
-        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:HomeViewModel}"><views:HomeView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:DiskAnalyzerViewModel}"><views:DiskAnalyzerView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ProjectCleanerViewModel}"><views:ProjectCleanerView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:TempCleanupViewModel}"><views:TempCleanupView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:FileFinderViewModel}"><views:FileFinderView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StartupAppsViewModel}"><views:StartupAppsView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ProcessManagerViewModel}"><views:ProcessManagerView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:BackupViewModel}"><views:BackupView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RecoveryViewModel}"><views:RecoveryView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:LicenseViewModel}"><views:LicenseView /></DataTemplate>
 
         <Style x:Key="NavButton" TargetType="Button">
-            <Setter Property="Margin" Value="8,4" />
+            <Setter Property="Margin" Value="8,3" />
             <Setter Property="Padding" Value="10,6" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
+        </Style>
+        <Style x:Key="NavGroup" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="12,12,0,2" />
         </Style>
     </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="190" />
+            <ColumnDefinition Width="200" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
         <DockPanel Grid.Column="0" Background="#2D2D30">
             <StackPanel DockPanel.Dock="Bottom" Margin="8,8,8,14">
+                <Button Content="{Binding LicenseSummary}" Command="{Binding ShowLicenseCommand}" Padding="6,5" Margin="0,0,0,8"
+                        ToolTip="Licence and activation" />
                 <TextBlock Text="Running as administrator" Foreground="#9FE0B5" Margin="4,0" TextWrapping="Wrap"
                            Visibility="{Binding IsAdministrator, Converter={StaticResource BoolToVis}}" />
                 <Button Content="Restart as administrator" Command="{Binding RestartAsAdministratorCommand}" Padding="6,5"
-                        ToolTip="Needed for all-users startup apps, Windows Update files and system processes"
+                        ToolTip="Needed for all-users startup apps, Windows Update files, restore points and system processes"
                         Visibility="{Binding IsNotAdministrator, Converter={StaticResource BoolToVis}}" />
             </StackPanel>
-            <StackPanel Margin="0,8,0,0">
-                <Button Content="Disk Analyzer" Command="{Binding ShowDiskAnalyzerCommand}" Style="{StaticResource NavButton}" />
-                <Button Content="Dev Project Cleaner" Command="{Binding ShowProjectCleanerCommand}" Style="{StaticResource NavButton}" />
-                <Button Content="Junk Cleanup" Command="{Binding ShowTempCleanupCommand}" Style="{StaticResource NavButton}" />
-                <Button Content="Startup Apps" Command="{Binding ShowStartupAppsCommand}" Style="{StaticResource NavButton}" />
-                <Button Content="Processes" Command="{Binding ShowProcessManagerCommand}" Style="{StaticResource NavButton}" />
-            </StackPanel>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,4,0,0">
+                    <Button Content="Home" Command="{Binding ShowHomeCommand}" Style="{StaticResource NavButton}" />
+                    <TextBlock Text="FREE UP SPACE" Style="{StaticResource NavGroup}" />
+                    <Button Content="Disk Analyzer" Command="{Binding ShowDiskAnalyzerCommand}" Style="{StaticResource NavButton}" />
+                    <Button Content="Junk Cleanup" Command="{Binding ShowTempCleanupCommand}" Style="{StaticResource NavButton}" />
+                    <Button Content="File Finder" Command="{Binding ShowFileFinderCommand}" Style="{StaticResource NavButton}" />
+                    <Button Content="Dev Project Cleaner" Command="{Binding ShowProjectCleanerCommand}" Style="{StaticResource NavButton}" />
+                    <TextBlock Text="SPEED UP" Style="{StaticResource NavGroup}" />
+                    <Button Content="Startup Apps" Command="{Binding ShowStartupAppsCommand}" Style="{StaticResource NavButton}" />
+                    <Button Content="Processes" Command="{Binding ShowProcessManagerCommand}" Style="{StaticResource NavButton}" />
+                    <TextBlock Text="PROTECT" Style="{StaticResource NavGroup}" />
+                    <Button Content="Backup &amp; Restore" Command="{Binding ShowBackupCommand}" Style="{StaticResource NavButton}" />
+                    <Button Content="Recovery" Command="{Binding ShowRecoveryCommand}" Style="{StaticResource NavButton}" />
+                </StackPanel>
+            </ScrollViewer>
         </DockPanel>
 
         <ContentControl Grid.Column="1" Content="{Binding CurrentView}" />

@@ -3,5 +3,8 @@
     <Project Path="src/TelDiskCleaner.App/TelDiskCleaner.App.csproj" />
     <Project Path="src/TelDiskCleaner.Core.Tests/TelDiskCleaner.Core.Tests.csproj" />
     <Project Path="src/TelDiskCleaner.Core/TelDiskCleaner.Core.csproj" />
+    <Project Path="src/TelDiskCleaner.LicenseServer.Tests/TelDiskCleaner.LicenseServer.Tests.csproj" />
+    <Project Path="src/TelDiskCleaner.LicenseServer/TelDiskCleaner.LicenseServer.csproj" />
+    <Project Path="src/TelDiskCleaner.Licensing/TelDiskCleaner.Licensing.csproj" />
   </Folder>
 </Solution>

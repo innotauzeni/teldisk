@@ -2,3 +2,10 @@ bin/
 obj/
 .vs/
 publish/
+
+# Licence server secrets and data
+src/TelDiskCleaner.LicenseServer/keys/
+*.db
+*.db-shm
+*.db-wal
+appsettings.Production.json

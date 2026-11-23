@@ -1,0 +1,94 @@
+<UserControl x:Class="TelDiskCleaner.App.Views.BackupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:TelDiskCleaner.App.ViewModels"
+             xmlns:conv="clr-namespace:TelDiskCleaner.App.Converters"
+             d:DataContext="{d:DesignInstance Type=vm:BackupViewModel}"
+             mc:Ignorable="d"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+    <UserControl.Resources>
+        <conv:InverseBooleanConverter x:Key="InverseBoolean" />
+    </UserControl.Resources>
+
+    <Grid Margin="16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="230" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <DockPanel Grid.Column="0" Margin="0,0,16,0">
+            <TextBlock DockPanel.Dock="Top" Text="Backups" Style="{StaticResource SectionTitle}" />
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,8,0,0">
+                <Button Content="New backup" Command="{Binding NewJobCommand}" Style="{StaticResource Primary}" Margin="0,0,8,0" />
+                <Button Content="Delete" Click="OnDeleteJobClick" Style="{StaticResource Plain}" IsEnabled="{Binding HasSelection}" />
+            </StackPanel>
+            <ListBox ItemsSource="{Binding Jobs}" SelectedItem="{Binding SelectedJob}" DisplayMemberPath="Name" />
+        </DockPanel>
+
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <TextBlock Text="Back up your folders to a USB or external drive. Only changed files are copied, older versions are kept, and restoring never overwrites your files."
+                           Style="{StaticResource Muted}" Margin="0,0,0,10" />
+                <TextBlock Text="{Binding StatusMessage}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,10" />
+
+                <TextBlock Text="Click New backup to create your first backup." Style="{StaticResource Muted}"
+                           Visibility="{Binding HasNoSelection, Converter={StaticResource BoolToVis}}" />
+
+                <StackPanel DataContext="{Binding SelectedJob}" Visibility="{Binding DataContext.HasSelection, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}">
+                    <TextBlock Text="Name" FontWeight="SemiBold" />
+                    <TextBox Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="360" HorizontalAlignment="Left" Margin="0,2,0,10" />
+
+                    <TextBlock Text="Folders to back up" FontWeight="SemiBold" />
+                    <ItemsControl ItemsSource="{Binding Sources}" Margin="0,4,0,4">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="0,2">
+                                    <TextBlock Text="{Binding}" Width="420" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                                    <Button Content="Remove" Padding="6,1"
+                                            Command="{Binding DataContext.RemoveSourceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                            CommandParameter="{Binding}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button Content="Add folder..." Click="OnAddSourceClick" Style="{StaticResource Plain}" HorizontalAlignment="Left" Margin="0,0,0,12" />
+
+                    <TextBlock Text="Save backups to" FontWeight="SemiBold" />
+                    <StackPanel Orientation="Horizontal" Margin="0,2,0,12">
+                        <TextBox Text="{Binding Destination, UpdateSourceTrigger=PropertyChanged}" Width="360" VerticalContentAlignment="Center" />
+                        <Button Content="Browse..." Click="OnBrowseDestinationClick" Style="{StaticResource Plain}" Margin="8,0,0,0" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <TextBlock Text="Keep older versions of each changed file:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,8,0" />
+                        <TextBox Text="{Binding KeepVersions, UpdateSourceTrigger=PropertyChanged}" Width="50" VerticalContentAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBlock Text="Skip folders named (comma separated)" FontWeight="SemiBold" />
+                    <TextBox Text="{Binding ExclusionsText, UpdateSourceTrigger=PropertyChanged}" Width="520" HorizontalAlignment="Left" Margin="0,2,0,4" TextWrapping="Wrap" />
+                    <TextBlock Text="Build folders such as node_modules can be recreated, so they are skipped to save time and space."
+                               Style="{StaticResource Muted}" FontSize="12" Margin="0,0,0,12" />
+
+                    <CheckBox Content="Back up automatically every day (12:00, or at the next start-up if the PC was off)"
+                              IsChecked="{Binding RunDaily}" Margin="0,0,0,14" />
+
+                    <TextBlock Text="{Binding LastRun}" Style="{StaticResource Muted}" Margin="0,0,0,12" />
+                </StackPanel>
+
+                <WrapPanel Visibility="{Binding HasSelection, Converter={StaticResource BoolToVis}}">
+                    <Button Content="Save" Command="{Binding SaveCommand}" Style="{StaticResource Plain}" Margin="0,0,8,8"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolean}}" />
+                    <Button Content="Back up now" Command="{Binding BackUpNowCommand}" Style="{StaticResource Primary}" Margin="0,0,8,8"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolean}}" />
+                    <Button Content="Cancel" Command="{Binding CancelCommand}" Style="{StaticResource Plain}" Margin="0,0,8,8" IsEnabled="{Binding IsBusy}" />
+                    <Button Content="Restore to original folders" Click="OnRestoreOriginalClick" Style="{StaticResource Plain}" Margin="0,0,8,8"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolean}}" />
+                    <Button Content="Restore to another folder..." Click="OnRestoreElsewhereClick" Style="{StaticResource Plain}" Margin="0,0,8,8"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolean}}" />
+                    <Button Content="Open backup folder" Command="{Binding OpenBackupFolderCommand}" Style="{StaticResource Plain}" Margin="0,0,8,8" />
+                </WrapPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

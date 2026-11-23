@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using TelDiskCleaner.Core.Backup;
 
 namespace TelDiskCleaner.Core.Configuration;
 
@@ -22,6 +23,9 @@ public sealed class AppSettings
 
     [JsonPropertyName("ignoredProjects")]
     public List<IgnoredProject> IgnoredProjects { get; set; } = new();
+
+    [JsonPropertyName("backupJobs")]
+    public List<BackupJob> BackupJobs { get; set; } = new();
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {

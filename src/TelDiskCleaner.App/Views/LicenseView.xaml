@@ -1,0 +1,81 @@
+<UserControl x:Class="TelDiskCleaner.App.Views.LicenseView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:TelDiskCleaner.App.ViewModels"
+             xmlns:conv="clr-namespace:TelDiskCleaner.App.Converters"
+             d:DataContext="{d:DesignInstance Type=vm:LicenseViewModel}"
+             mc:Ignorable="d"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             Background="#F8FAFC">
+    <UserControl.Resources>
+        <conv:InverseBooleanConverter x:Key="InverseBoolean" />
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20,16" MaxWidth="760" HorizontalAlignment="Left">
+            <TextBlock Text="Licence" Style="{StaticResource PageTitle}" />
+
+            <Border Background="#FFF7E6" BorderBrush="#F8B51C" BorderThickness="1" CornerRadius="10" Padding="14,10" Margin="0,8,0,12">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding LockedFeatureMessage}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock Text="{Binding LockedFeatureMessage}" TextWrapping="Wrap" FontWeight="SemiBold" />
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="{Binding StatusTitle}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding StatusDetail}" Style="{StaticResource Muted}" Margin="0,4,0,10" />
+                    <Button Content="Check again" Command="{Binding CheckAgainCommand}" Style="{StaticResource Plain}" HorizontalAlignment="Left"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolean}}" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Activate TelDiskCleaner Pro" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="Enter the licence key you received after paying. It looks like TDC-XXXX-XXXX-XXXX-XXXX."
+                               Style="{StaticResource Muted}" Margin="0,0,0,8" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBox Text="{Binding KeyInput, UpdateSourceTrigger=PropertyChanged}" Width="300" FontFamily="Consolas" FontSize="15"
+                                 VerticalContentAlignment="Center" CharacterCasing="Upper" />
+                        <Button Content="Activate" Command="{Binding ActivateCommand}" Style="{StaticResource Primary}" Margin="8,0,0,0"
+                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolean}}" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding Message}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,8,0,0" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Get a yearly Pro licence" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Style="{StaticResource Muted}" Margin="0,0,0,6"
+                               Text="Pro unlocks every tool: junk and project cleanup, file finder, backups, recovery, startup apps, processes and automatic cleaning. One licence covers one PC for one year." />
+                    <TextBlock Text="{Binding BuyContact}" FontWeight="SemiBold" FontSize="15" Margin="0,4,0,6" />
+                    <TextBlock Style="{StaticResource Muted}" Text="Pay by EcoCash, bank transfer or another agreed method, and your licence key will be sent to you by WhatsApp or email." />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Visibility="{Binding IsPro, Converter={StaticResource BoolToVis}}">
+                <StackPanel>
+                    <TextBlock Text="Moving to a new PC?" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Style="{StaticResource Muted}" Margin="0,0,0,8"
+                               Text="Deactivate Pro here first, then enter the same key on the new PC." />
+                    <Button Content="Deactivate this PC" Click="OnDeactivateClick" Style="{StaticResource Plain}" HorizontalAlignment="Left"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolean}}" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Style="{StaticResource Muted}" FontSize="12" Margin="0,4,0,0">
+                <Run Text="This PC: " /><Run Text="{Binding MachineName, Mode=OneWay}" /><Run Text=". To check your licence, TelDiskCleaner sends the licence server an anonymous ID for this PC and the PC's name. No files or personal data are sent." />
+            </TextBlock>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

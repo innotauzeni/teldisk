@@ -36,7 +36,7 @@ public sealed partial class ProjectCandidateViewModel : ObservableObject
 public sealed partial class ProjectCleanerViewModel : ObservableObject
 {
     private readonly ProjectCleanupService _service = new();
-    private readonly AppSettings _settings = AppSettings.Load();
+    private readonly AppSettings _settings;
     private CancellationTokenSource? _cts;
 
     [ObservableProperty]
@@ -57,8 +57,9 @@ public sealed partial class ProjectCleanerViewModel : ObservableObject
     public long SelectedTotalBytes => Candidates.Where(c => c.IsSelected).Sum(c => c.Candidate.TotalArtifactSize);
     public string SelectedTotalDisplay => SizeFormatter.Format(SelectedTotalBytes);
 
-    public ProjectCleanerViewModel()
+    public ProjectCleanerViewModel(AppSettings settings)
     {
+        _settings = settings;
         ThresholdDays = _settings.StalenessThresholdDays;
         foreach (var root in _settings.ProjectRoots) ProjectRoots.Add(root);
     }

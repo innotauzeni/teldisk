@@ -1,0 +1,80 @@
+<UserControl x:Class="TelDiskCleaner.App.Views.RecoveryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:TelDiskCleaner.App.ViewModels"
+             xmlns:conv="clr-namespace:TelDiskCleaner.App.Converters"
+             d:DataContext="{d:DesignInstance Type=vm:RecoveryViewModel}"
+             mc:Ignorable="d"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+    <UserControl.Resources>
+        <conv:InverseBooleanConverter x:Key="InverseBoolean" />
+    </UserControl.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Removed files" Style="{StaticResource SectionTitle}" />
+        <StackPanel Grid.Row="1" Margin="0,0,0,8">
+            <TextBlock Text="{Binding TotalDisplay}" Style="{StaticResource Muted}" />
+            <TextBlock Text="{Binding StatusMessage}" FontWeight="SemiBold" TextWrapping="Wrap" />
+        </StackPanel>
+
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Items}" AutoGenerateColumns="False" IsReadOnly="True"
+                  CanUserAddRows="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal" MinHeight="120">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" Margin="4,0" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="File" Binding="{Binding Name}" Width="220" />
+                <DataGridTextColumn Header="Size" Binding="{Binding SizeDisplay}" SortMemberPath="Item.SizeBytes" Width="90" />
+                <DataGridTextColumn Header="Removed" Binding="{Binding RemovedDisplay}" Width="130" />
+                <DataGridTextColumn Header="Deleted for good on" Binding="{Binding PurgeDisplay}" Width="140" />
+                <DataGridTextColumn Header="Original folder" Binding="{Binding OriginalFolder}" Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,8,0,16">
+            <Button Content="Restore selected" Command="{Binding RestoreSelectedCommand}" Style="{StaticResource Primary}" Margin="0,0,8,0" />
+            <Button Content="Delete selected now" Click="OnDeleteNowClick" Style="{StaticResource Plain}" />
+            <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource Plain}" />
+        </StackPanel>
+
+        <Border Grid.Row="4" Style="{StaticResource Card}" Margin="0">
+            <StackPanel>
+                <TextBlock Text="Windows restore points" Style="{StaticResource SectionTitle}" />
+                <TextBlock Text="{Binding RestorePointHelp}" Style="{StaticResource Muted}" Margin="0,0,0,8" />
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Content="Create restore point" Command="{Binding CreateRestorePointCommand}" Style="{StaticResource Plain}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolean}}" />
+                    <Button Content="Show restore points" Command="{Binding LoadRestorePointsCommand}" Style="{StaticResource Plain}"
+                            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBoolean}}" />
+                    <Button Content="Open System Restore..." Command="{Binding OpenSystemRestoreCommand}" Style="{StaticResource Plain}" />
+                </StackPanel>
+                <TextBlock Text="{Binding RestorePointStatus}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,6" />
+                <ItemsControl ItemsSource="{Binding RestorePoints}" MaxHeight="120">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock>
+                                <Run Text="{Binding Created, StringFormat='{}{0:d MMM yyyy HH:mm}', Mode=OneWay}" FontWeight="SemiBold" />
+                                <Run Text="  " />
+                                <Run Text="{Binding Description, Mode=OneWay}" />
+                            </TextBlock>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
