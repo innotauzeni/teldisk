@@ -207,6 +207,27 @@ public sealed class LicensingEndToEndTests : IDisposable
     }
 
     [Fact]
+    public async Task LicensingSwitchedOff_UnlocksEverything_WithoutContactingAServer()
+    {
+        using var app = new LicenseManager(new LicenseOptions
+        {
+            ServerUrl = "http://127.0.0.1:9", // nothing listens here; any request would fail
+            PublicKey = _publicKey,
+            StorePath = Path.Combine(_folder, "license-off.json"),
+            DeviceId = "pc1",
+            MachineName = "PC-pc1",
+            Enabled = false,
+        });
+
+        Assert.Equal(LicenseMode.Unlocked, app.LoadFromDisk().Mode);
+        var refreshed = await app.RefreshAsync();
+        Assert.Equal(LicenseMode.Unlocked, refreshed.Mode);
+        Assert.True(refreshed.HasFullAccess);
+        Assert.False((await app.ActivateAsync("TDC-AAAA-BBBB-CCCC-DDDD")).Success);
+        Assert.False(File.Exists(Path.Combine(_folder, "license-off.json")));
+    }
+
+    [Fact]
     public async Task AdminApi_RequiresTheAdminKey()
     {
         var client = _factory.CreateClient();

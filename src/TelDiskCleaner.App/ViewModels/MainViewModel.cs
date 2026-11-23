@@ -26,6 +26,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     public bool IsAdministrator { get; } = AdminHelper.IsAdministrator();
     public bool IsNotAdministrator => !IsAdministrator;
+    public bool LicensingEnabled => _license.IsEnabled;
 
     [ObservableProperty]
     private object _currentView;

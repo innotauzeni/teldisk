@@ -42,7 +42,8 @@
         <DockPanel Grid.Column="0" Background="#2D2D30">
             <StackPanel DockPanel.Dock="Bottom" Margin="8,8,8,14">
                 <Button Content="{Binding LicenseSummary}" Command="{Binding ShowLicenseCommand}" Padding="6,5" Margin="0,0,0,8"
-                        ToolTip="Licence and activation" />
+                        ToolTip="Licence and activation"
+                        Visibility="{Binding LicensingEnabled, Converter={StaticResource BoolToVis}}" />
                 <TextBlock Text="Running as administrator" Foreground="#9FE0B5" Margin="4,0" TextWrapping="Wrap"
                            Visibility="{Binding IsAdministrator, Converter={StaticResource BoolToVis}}" />
                 <Button Content="Restart as administrator" Command="{Binding RestartAsAdministratorCommand}" Padding="6,5"

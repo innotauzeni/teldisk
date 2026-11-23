@@ -12,11 +12,14 @@ public enum LicenseMode
     TrialEnded,
     Expired,
     NeedsInternet,
+
+    /// <summary>Licensing is switched off in this build, so everything is free.</summary>
+    Unlocked,
 }
 
 public sealed record LicenseStatus(LicenseMode Mode, DateTime? ExpiresUtc = null, string? KeyHint = null, string? Message = null)
 {
-    public bool HasFullAccess => Mode is LicenseMode.Trial or LicenseMode.Pro;
+    public bool HasFullAccess => Mode is LicenseMode.Trial or LicenseMode.Pro or LicenseMode.Unlocked;
 }
 
 public sealed record LicenseActionResult(bool Success, string Message);
@@ -28,6 +31,7 @@ public sealed class LicenseOptions
     public required string StorePath { get; init; }
     public required string DeviceId { get; init; }
     public required string MachineName { get; init; }
+    public bool Enabled { get; init; } = true;
 }
 
 public sealed class StoredLicense
@@ -60,11 +64,19 @@ public sealed class LicenseManager : IDisposable
         StorePath = AppPaths.File("license.json"),
         DeviceId = DeviceIdentity.GetDeviceId(),
         MachineName = Environment.MachineName,
+        Enabled = LicenseConfig.Enabled,
     });
 
     public LicenseStatus Status { get; private set; } = new(LicenseMode.Checking);
 
     public string MachineName => _options.MachineName;
+
+    public bool IsEnabled => _options.Enabled;
+
+    private static readonly LicenseStatus UnlockedStatus = new(LicenseMode.Unlocked);
+
+    private static readonly LicenseActionResult LicensingOff =
+        new(false, "Licensing is turned off in this version, so every feature is already unlocked.");
 
     /// <summary>Raised from whichever thread made the change.</summary>
     public event EventHandler? StatusChanged;
@@ -72,13 +84,19 @@ public sealed class LicenseManager : IDisposable
     /// <summary>Status from the saved token alone, with no network call.</summary>
     public LicenseStatus LoadFromDisk()
     {
-        SetStatus(Evaluate(JsonFileStore.Load<StoredLicense>(_options.StorePath)));
+        SetStatus(_options.Enabled ? Evaluate(JsonFileStore.Load<StoredLicense>(_options.StorePath)) : UnlockedStatus);
         return Status;
     }
 
     /// <summary>Gets a fresh token from the server, or keeps the saved one when offline.</summary>
     public async Task<LicenseStatus> RefreshAsync()
     {
+        if (!_options.Enabled)
+        {
+            SetStatus(UnlockedStatus);
+            return Status;
+        }
+
         await _gate.WaitAsync();
         try
         {
@@ -115,6 +133,8 @@ public sealed class LicenseManager : IDisposable
 
     public async Task<LicenseActionResult> ActivateAsync(string key)
     {
+        if (!_options.Enabled) return LicensingOff;
+
         var normalized = LicenseKeyFormat.Normalize(key);
         if (normalized.Length == 0) return new LicenseActionResult(false, "Enter your licence key.");
 
@@ -154,6 +174,8 @@ public sealed class LicenseManager : IDisposable
     /// <summary>Frees this PC's seat so the key can be used on another PC.</summary>
     public async Task<LicenseActionResult> DeactivateAsync()
     {
+        if (!_options.Enabled) return LicensingOff;
+
         await _gate.WaitAsync();
         try
         {

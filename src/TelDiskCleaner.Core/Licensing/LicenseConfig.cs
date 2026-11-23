@@ -20,9 +20,20 @@ public static class LicenseConfig
     public static string ServerUrl =>
         Environment.GetEnvironmentVariable("TELDISK_LICENSE_SERVER") is { Length: > 0 } fromEnvironment
             ? fromEnvironment
-            : Assembly.GetEntryAssembly()?.GetCustomAttributes<AssemblyMetadataAttribute>()
-                  .FirstOrDefault(a => a.Key == "LicenseServerUrl")?.Value
-              ?? "http://localhost:5080";
+            : BuildSetting("LicenseServerUrl") ?? "http://localhost:5080";
+
+    /// <summary>
+    /// Off by default: every feature is unlocked and the server is never contacted. Turn it on
+    /// at build time with -p:LicensingEnabled=true, or for testing with TELDISK_LICENSING=on.
+    /// </summary>
+    public static bool Enabled =>
+        Environment.GetEnvironmentVariable("TELDISK_LICENSING") is { Length: > 0 } fromEnvironment
+            ? fromEnvironment.Equals("on", StringComparison.OrdinalIgnoreCase)
+            : string.Equals(BuildSetting("LicensingEnabled"), "true", StringComparison.OrdinalIgnoreCase);
+
+    private static string? BuildSetting(string key) =>
+        Assembly.GetEntryAssembly()?.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .FirstOrDefault(a => a.Key == key)?.Value;
 }
 
 public static class DeviceIdentity

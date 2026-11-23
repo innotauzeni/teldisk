@@ -52,6 +52,7 @@ public sealed partial class LicenseViewModel : ObservableObject
         LicenseMode.TrialEnded => "Trial ended: get Pro",
         LicenseMode.Expired => "Pro expired: renew",
         LicenseMode.NeedsInternet => "Offline: connect to check licence",
+        LicenseMode.Unlocked => "All features unlocked",
         _ => "Checking licence...",
     };
 
@@ -71,6 +72,7 @@ public sealed partial class LicenseViewModel : ObservableObject
                     : "Disk Analyzer stays free. Get a yearly Pro licence to unlock everything else."),
             LicenseMode.Expired => ("Your Pro licence has ended", status.Message ?? "Renew your licence to keep using Pro."),
             LicenseMode.NeedsInternet => ("Connect to the internet", status.Message ?? "TelDiskCleaner needs to check your licence online."),
+            LicenseMode.Unlocked => ("All features unlocked", "Licensing is turned off in this version, so no licence key is needed."),
             _ => ("Checking your licence...", "This only takes a moment."),
         };
     }

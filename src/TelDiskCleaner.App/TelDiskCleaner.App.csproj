@@ -28,8 +28,15 @@
     <LicenseServerUrl Condition="'$(LicenseServerUrl)' == ''">http://localhost:5080</LicenseServerUrl>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Licensing is off until the product is ready to sell: everything is unlocked and no server is contacted.
+         Turn it on with -p:LicensingEnabled=true. -->
+    <LicensingEnabled Condition="'$(LicensingEnabled)' == ''">false</LicensingEnabled>
+  </PropertyGroup>
+
   <ItemGroup>
     <AssemblyMetadata Include="LicenseServerUrl" Value="$(LicenseServerUrl)" />
+    <AssemblyMetadata Include="LicensingEnabled" Value="$(LicensingEnabled)" />
   </ItemGroup>
 
 </Project>
